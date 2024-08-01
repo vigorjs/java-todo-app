@@ -18,8 +18,8 @@ spring:
 application:
   security:
     jwt:
-      secret-key: 743777217A25432A462D4A614E635266556A586E3272357538782F413F442847
-      expiration: 86400000 # a day
+      secret-key: 743777217A25432A462D4A614E635266556A586E3272357538782F413F442847F417249692150138512490812F908A8971412
+      expiration: 3600000 # 15 Minutes
       refresh-token:
         expiration: 604800000 # 7 days
 server:
@@ -42,3 +42,8 @@ logging:
             sql: DEBUG
             jwt: DEBUG
             bezkoder: DEBUG
+
+secret:
+  key:
+    super-admin: superman admin turing machine gigachad sigma
+    admin: admin turing machine alpha beta

@@ -1,47 +1,35 @@
 package com.virgo.todoapp.controller;
 
-import com.virgo.todoapp.utils.dto.AuthenticationRequestDTO;
-import com.virgo.todoapp.utils.dto.AuthenticationResponseDTO;
-import com.virgo.todoapp.utils.dto.RegisterRequestDTO;
+import com.virgo.todoapp.utils.dto.*;
 import com.virgo.todoapp.service.AuthenticationService;
-import com.virgo.todoapp.utils.response.WebResponse;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RestControllerAdvice
 @RequiredArgsConstructor
-@ApiResponses({
-        @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema()) }),
-        @ApiResponse(responseCode = "403", content = { @Content(schema = @Schema()) }),
-        @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
-        @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) })
-})
-@Tag(name = "Auth", description = "Auth management APIs")
 public class AuthenticationController {
 
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody RegisterRequestDTO request) {
-        return new ResponseEntity(new WebResponse("Berhasil Register", HttpStatus.OK, service.register(request)), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.CREATED)
+    public RegisterResponseDTO register(@RequestBody @Valid RegisterRequestDTO request) {
+        return service.register(request);
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponseDTO> authenticate(@RequestBody AuthenticationRequestDTO request) {
-        return new ResponseEntity(new WebResponse("Login Successfully", HttpStatus.OK, service.authenticate(request)), HttpStatus.OK);
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public AuthenticationResponseDTO authenticate(@RequestBody @Valid AuthenticationRequestDTO request) {
+        return service.authenticate(request);
     }
 
     @PostMapping("/refresh-token")
@@ -49,4 +37,9 @@ public class AuthenticationController {
         service.refreshToken(request, response);
     }
 
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, String> refreshToken(@RequestBody @Valid RefreshRequestDTO request) {
+        return service.refresh(request);
+    }
 }

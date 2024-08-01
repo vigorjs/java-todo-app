@@ -8,14 +8,14 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PaginationResponse<T> {
-    private List<T> items;
+public class UserPaginationResponse<T> {
+    private List<T> users;
     private Integer totalItems;
     private Integer currentPage;
     private Integer totalPages;
 
-    public PaginationResponse(Page<T> page) {
-        this.items = page.getContent();
+    public UserPaginationResponse(Page<T> page) {
+        this.users = page.getContent();
         this.totalItems = page.getNumberOfElements();
         this.currentPage = page.getNumber();
         this.totalPages = page.getTotalPages();

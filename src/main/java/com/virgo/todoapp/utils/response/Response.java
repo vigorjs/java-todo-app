@@ -8,7 +8,7 @@ public class Response {
     public static <T> ResponseEntity<?> renderJSON(T data, String message, HttpStatus httpStatus) {
         WebResponse<T> response = WebResponse.<T>builder()
                 .message(message)
-                .status(httpStatus)
+                .status(httpStatus.value())
                 .data(data)
                 .build();
         return ResponseEntity.status(httpStatus).body(response);
@@ -22,11 +22,10 @@ public class Response {
         return renderJSON(data, "Success");
     }
 
-    public static <T> ResponseEntity<?> renderError(String message, HttpStatus httpStatus, List<T> errors) {
+    public static <T> ResponseEntity<?> renderError(String message, HttpStatus httpStatus, String errors) {
         WebResponseError<T> response = WebResponseError.<T>builder()
                 .message(message)
-                .status(httpStatus)
-                .errors(errors)
+                .error(errors)
                 .build();
         return ResponseEntity.status(httpStatus).body(response);
     }

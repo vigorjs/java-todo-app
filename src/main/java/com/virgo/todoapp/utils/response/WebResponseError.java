@@ -11,7 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WebResponseError<T> {
+    private String error;
     private String message;
-    private HttpStatus status;
-    private List<T> errors;
 }

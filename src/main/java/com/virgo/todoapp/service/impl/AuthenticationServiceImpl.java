@@ -3,9 +3,9 @@ package com.virgo.todoapp.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.virgo.todoapp.config.JwtService;
 import com.virgo.todoapp.config.advisers.exception.AuthenticationException;
-import com.virgo.todoapp.utils.dto.AuthenticationRequestDTO;
-import com.virgo.todoapp.utils.dto.AuthenticationResponseDTO;
-import com.virgo.todoapp.utils.dto.RegisterRequestDTO;
+import com.virgo.todoapp.config.advisers.exception.ConflictException;
+import com.virgo.todoapp.config.advisers.exception.NotFoundException;
+import com.virgo.todoapp.utils.dto.*;
 import com.virgo.todoapp.entity.meta.Token;
 import com.virgo.todoapp.entity.meta.User;
 import com.virgo.todoapp.entity.enums.Role;
@@ -25,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +39,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
 
     @Override
-    public AuthenticationResponseDTO register(RegisterRequestDTO request) {
+    public RegisterResponseDTO register(RegisterRequestDTO request) {
+        if (repository.existsByUsername(request.getUsername())) {
+            throw new ConflictException("Username already exists");
+        }
+        if (repository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email already exists");
+        }
+
         User user = User.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .address(request.getAddress())
@@ -48,26 +56,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .gender(request.getGender() != null ? request.getGender() : null)
                 .role(Role.USER)
                 .build();
-        var savedUser = repository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        saveUserToken(savedUser, jwtToken);
-        return AuthenticationResponseDTO.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
+        repository.save(user);
+
+        return RegisterResponseDTO.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
                 .build();
     }
 
     @Override
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
+        var user = repository.findByEmail(request.getEmail())
+                .orElseThrow(()-> new AuthenticationException("invalid credentials"));
+        if ( !passwordEncoder.matches(request.getPassword(), user.getPassword()) ){
+            throw new AuthenticationException("invalid credentials");
+        }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-        var user = repository.findByEmail(request.getEmail())
-                .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -127,9 +136,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
+    public Map<String, String> refresh(RefreshRequestDTO refreshToken) {
+        try {
+            final String userEmail = jwtService.extractUsername(refreshToken.getRefreshToken());
+            if (userEmail != null) {
+                var user = this.repository.findByEmail(userEmail).orElseThrow(() ->
+                        new AuthenticationException("refresh token invalid credentials"));
+                if (jwtService.isTokenValid(refreshToken.getRefreshToken(), user)) {
+                    String accessToken = jwtService.generateToken(user);
+                    return Map.of("accessToken", accessToken);
+                }
+            }
+        } catch (Exception e) {
+            throw new AuthenticationException("invalid refresh token credentials");
+        }
+        throw new AuthenticationException("invalid refresh token credentials");
+    }
+
+    @Override
     public User getUserAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByEmail(authentication.getName()).orElseThrow(() -> new AuthenticationException("Unauthorized, silahkan login"));
+        Authentication authentication1 = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(authentication1.getName()).orElseThrow(() -> new AuthenticationException("Unauthorized, silahkan login"));
         return user;
     }
 }

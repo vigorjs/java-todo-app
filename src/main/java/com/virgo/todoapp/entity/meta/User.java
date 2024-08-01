@@ -1,18 +1,17 @@
 package com.virgo.todoapp.entity.meta;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.virgo.todoapp.entity.enums.Gender;
 import com.virgo.todoapp.entity.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -21,17 +20,16 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "Users")
+@Getter
+@Setter
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue
     private Integer id;
 
-    @Column(name = "FirstName", nullable = false, length = 100)
-    private String firstname;
-
-    @Column(name = "LastName", nullable = false, length = 100)
-    private String lastname;
+    @Column(name = "username", length = 100, unique = true)
+    private String username;
 
     @Column(name = "Address", length = 100)
     private String address;
@@ -53,6 +51,18 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Token> tokens;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "createdAt")
+    private Date createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = new Date();
+        }
+    }
 
 //    @OneToMany(mappedBy = "user")
 //    @JsonIgnore

@@ -21,7 +21,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskRequestDTO {
+public class TaskUpdateDTO {
 
     @Nullable
     @NotBlank(message = "title cant be Blank")
@@ -32,7 +32,7 @@ public class TaskRequestDTO {
     private String description;
 
     @Nullable
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 //    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$", message = "Invalid dueDate format")
     private String dueDate;
 

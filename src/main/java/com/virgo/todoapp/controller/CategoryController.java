@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/category")
+@RequestMapping("/api/category")
 @RestControllerAdvice
 @RequiredArgsConstructor
 @Tag(name = "Category", description = "Category Management APIs")
@@ -36,7 +37,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema()) })
     })
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody CategoryRequestDTO req) {
+    public ResponseEntity<?> create(@RequestBody @Valid CategoryRequestDTO req) {
         return Response.renderJSON(
                 categoryService.create(req),
                 "Category berhasil dibuat!",

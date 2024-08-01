@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
 @RestController
-@RequestMapping("/api/v1/demo-controller")
+@RequestMapping("/api/demo-controller")
 @Tag(name = "Demo", description = "Demo management APIs")
 public class DemoController {
 
@@ -30,7 +30,7 @@ public class DemoController {
     })
     @GetMapping
     public ResponseEntity<String> sayHello(){
-        return new ResponseEntity(new WebResponse("Mantap", HttpStatus.OK, "Hello from secured endpoint"), HttpStatus.OK);
+        return new ResponseEntity(new WebResponse("Mantap", HttpStatus.OK.value(), "Hello from secured endpoint"), HttpStatus.OK);
     }
 
 }
